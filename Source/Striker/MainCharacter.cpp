@@ -50,7 +50,7 @@ AMainCharacter::AMainCharacter()
 
 float AMainCharacter::GetSpeedPlayer() 
 {
-	return 0.0f;
+	return GetVelocity().Length();
 }
 
 
@@ -112,6 +112,7 @@ void AMainCharacter::Move(const FInputActionValue& Instance)
 		AddMovementInput(Right, MovementValue.X);
 		AddMovementInput(Forward, MovementValue.Y);
 		UE_LOG(LogTemp, Warning, TEXT("%f %f"), MovementValue.X, MovementValue.Y);
+		UE_LOG(LogTemp, Warning, TEXT("%f"), GetSpeedPlayer());
 	}
 }
 

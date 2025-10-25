@@ -19,8 +19,7 @@ class STRIKER_API AMainCharacter : public ACharacter
 
 public:
 	AMainCharacter();
-	UFUNCTION(BlueprintCallable)
-	float GetSpeedPlayer();
+	
 
 protected:
 	virtual void BeginPlay() override;
@@ -55,4 +54,7 @@ private:
 	void OnStopJump();
 
 	void Aim();
+
+	UFUNCTION(BlueprintCallable)
+	float GetSpeedPlayer();
 };
