@@ -11,7 +11,7 @@
 #include "InputActionValue.h"
 
 
-DEFINE_LOG_CATEGORY(CharacterLog);
+
 
 
 
@@ -30,7 +30,7 @@ AMainCharacter::AMainCharacter()
 
 	SpringArmComp->bUsePawnControlRotation = true;
 
-	SpringArmComp->TargetArmLength = 0.f;
+	SpringArmComp->TargetArmLength = 150.f;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -48,16 +48,14 @@ AMainCharacter::AMainCharacter()
 	
 }
 
-float AMainCharacter::GetSpeedPlayer() 
-{
-	return GetVelocity().Length();
-}
+
 
 
 
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	UWorld* myWorld = GetWorld();
 	SpringArmComp->SetRelativeLocation(FVector(0.0, 0.0, 150.0));
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
@@ -67,6 +65,15 @@ void AMainCharacter::BeginPlay()
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Sucsess Load Mapping Context"));
 		}
 	}
+	
+
+	
+	FVector Location = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+	FRotator Rotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	Weapon = myWorld->SpawnActor<AActor>(BP_WeaponClass,Location,Rotation, SpawnParams);
+	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
 	
 }
 
@@ -112,7 +119,7 @@ void AMainCharacter::Move(const FInputActionValue& Instance)
 		AddMovementInput(Right, MovementValue.X);
 		AddMovementInput(Forward, MovementValue.Y);
 		UE_LOG(LogTemp, Warning, TEXT("%f %f"), MovementValue.X, MovementValue.Y);
-		UE_LOG(LogTemp, Warning, TEXT("%f"), GetSpeedPlayer());
+		
 	}
 }
 
@@ -140,7 +147,7 @@ void AMainCharacter::OnStopJump()
 
 void AMainCharacter::Aim()
 {
-	//UE_LOG(ChcaracterLog, Warning, TEXT("You Aiming");
+	
 }
 
 
