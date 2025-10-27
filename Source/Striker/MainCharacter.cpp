@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
+#include "Blueprint/UserWidget.h"
 
 
 
@@ -20,6 +21,102 @@ AMainCharacter::AMainCharacter()
  	
 	PrimaryActorTick.bCanEverTick = false;
 
+	SetDefaultSettingsCharacter();
+	
+	
+	
+	
+}
+
+
+
+
+
+void AMainCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	myWorld = GetWorld();
+	SpringArmComp->SetRelativeLocation(FVector(0.0, 0.0, 150.0));
+	
+	InitEnhancedInput();
+	SpawnWeapon();
+	InitWidget();
+	
+
+
+
+	
+}
+
+
+void AMainCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+
+void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	if (UEnhancedInputComponent* EInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		EInput->BindAction(IA_MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
+		EInput->BindAction(IA_LookAction, ETriggerEvent::Triggered, this, &AMainCharacter::Look);
+		EInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &AMainCharacter::OnStartJump);
+		EInput->BindAction(IA_Jump, ETriggerEvent::Completed, this, &AMainCharacter::OnStopJump);
+		EInput->BindAction(IA_Jump, ETriggerEvent::Canceled, this, &AMainCharacter::OnStopJump);
+		EInput->BindAction(IA_Aim, ETriggerEvent::Started, this, &AMainCharacter::StartAim);
+		EInput->BindAction(IA_Aim, ETriggerEvent::Completed, this, &AMainCharacter::StopAim);
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Find The MoveAction"));
+	}
+	
+
+	
+}
+
+
+void AMainCharacter::Move(const FInputActionValue& Instance)
+{
+	GEngine->AddOnScreenDebugMessage(2, 0.2f, FColor::Red, TEXT("Move"));
+	const FVector2D MovementValue = Instance.Get<FVector2D>();
+	if (Controller)
+	{
+
+		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
+		const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		const FVector Forward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		AddMovementInput(Right, MovementValue.X);
+		AddMovementInput(Forward, MovementValue.Y);		
+	}
+}
+
+void AMainCharacter::Look(const FInputActionValue& Instance)
+{
+	GEngine->AddOnScreenDebugMessage(3, 0.2f, FColor::Red, TEXT("Looking"));
+	const FVector2D MovementValue = Instance.Get<FVector2D>();
+	if (Controller)
+	{
+		AddControllerYawInput(MovementValue.X);
+		AddControllerPitchInput(MovementValue.Y);
+	}
+}
+
+void AMainCharacter::OnStartJump()
+{
+	GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Cyan, TEXT("Jumping"));
+	Jump();
+	//bPressedJump = true;
+}
+
+void AMainCharacter::OnStopJump()
+{
+	StopJumping();
+	//bPressedJump = false;
+}
+
+void AMainCharacter::SetDefaultSettingsCharacter()
+{
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 
@@ -43,20 +140,10 @@ AMainCharacter::AMainCharacter()
 	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->JumpZVelocity = 50.f;
-	
-	
-	
 }
 
-
-
-
-
-void AMainCharacter::BeginPlay()
+void AMainCharacter::InitEnhancedInput()
 {
-	Super::BeginPlay();
-	UWorld* myWorld = GetWorld();
-	SpringArmComp->SetRelativeLocation(FVector(0.0, 0.0, 150.0));
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -65,89 +152,48 @@ void AMainCharacter::BeginPlay()
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Sucsess Load Mapping Context"));
 		}
 	}
-	
-
-	
-	FVector Location = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
-	FRotator Rotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	Weapon = myWorld->SpawnActor<AActor>(BP_WeaponClass,Location,Rotation, SpawnParams);
-	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
-	
 }
 
-
-void AMainCharacter::Tick(float DeltaTime)
+void AMainCharacter::SpawnWeapon()
 {
-	Super::Tick(DeltaTime);
-
-}
-
-
-void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	if (UEnhancedInputComponent* EInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		EInput->BindAction(IA_MoveAction, ETriggerEvent::Triggered, this, &AMainCharacter::Move);
-		EInput->BindAction(IA_LookAction, ETriggerEvent::Triggered, this, &AMainCharacter::Look);
-		EInput->BindAction(IA_Jump, ETriggerEvent::Started, this, &AMainCharacter::OnStartJump);
-		EInput->BindAction(IA_Jump, ETriggerEvent::Completed, this, &AMainCharacter::OnStopJump);
-		EInput->BindAction(IA_Jump, ETriggerEvent::Canceled, this, &AMainCharacter::OnStopJump);
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Find The MoveAction"));
+	if (BP_WeaponClass) {
+		FVector Location = GetMesh()->GetSocketLocation(TEXT("WeaponSocket"));
+		FRotator Rotation = GetMesh()->GetSocketRotation(TEXT("WeaponSocket"));
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		Weapon = myWorld->SpawnActor<AActor>(BP_WeaponClass, Location, Rotation, SpawnParams);
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
 	}
 	
-
-	
 }
 
-
-void AMainCharacter::Move(const FInputActionValue& Instance)
+void AMainCharacter::InitWidget()
 {
-	GEngine->AddOnScreenDebugMessage(2, 0.2f, FColor::Red, TEXT("Move"));
-	const FVector2D MovementValue = Instance.Get<FVector2D>();
-	if (Controller)
+	if (BP_WidgetClass)
 	{
-
-		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
-
-
-		const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		const FVector Forward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
-		AddMovementInput(Right, MovementValue.X);
-		AddMovementInput(Forward, MovementValue.Y);
-		UE_LOG(LogTemp, Warning, TEXT("%f %f"), MovementValue.X, MovementValue.Y);
-		
+		if (APlayerController* PC = Cast<APlayerController>(GetController())) {
+			userWidget = CreateWidget<UUserWidget>(PC, BP_WidgetClass);
+		}
 	}
 }
 
-void AMainCharacter::Look(const FInputActionValue& Instance)
+void AMainCharacter::StartAim()
 {
-	GEngine->AddOnScreenDebugMessage(3, 0.2f, FColor::Red, TEXT("Looking"));
-	const FVector2D MovementValue = Instance.Get<FVector2D>();
-	if (Controller)
-	{
-		AddControllerYawInput(MovementValue.X);
-		AddControllerPitchInput(MovementValue.Y);
+	bIsAiming = true;
+	bUseControllerRotationYaw = true;
+	if (userWidget) {
+		userWidget->AddToViewport();
+		//userWidget->PlayAnimationForward(WidgetCrosshairAnimation);
 	}
 }
 
-void AMainCharacter::OnStartJump()
+void AMainCharacter::StopAim()
 {
-	GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Cyan, TEXT("Jumping"));
-	bPressedJump = true;
-}
-
-void AMainCharacter::OnStopJump()
-{
-	bPressedJump = false;
-}
-
-void AMainCharacter::Aim()
-{
-	
+	bIsAiming = false;
+	bUseControllerRotationYaw = false;
+	if (userWidget) {
+		userWidget->RemoveFromParent();
+	}
 }
 
 

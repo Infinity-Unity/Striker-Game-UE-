@@ -36,6 +36,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* CameraComp;
 
+
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* IMC_Default;
 
@@ -48,16 +51,31 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Jump;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* IA_Aim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* IA_Shoot;
+
+
+
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BP_Weapon", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AActor> BP_WeaponClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> BP_WidgetClass;
+
+	//UPROPERTY(meta = (BindWidgetAnim), Transient, Category = "Widget")
+	//UWidgetAnimation* WidgetCrosshairAnimation;
+
+	UPROPERTY()
+	UUserWidget* userWidget;
+
+
+
 	AActor* Weapon;
-
-
-	void Move(const FInputActionValue& Instance);
-	void Look(const FInputActionValue& Instance);
-	void OnStartJump();
-	void OnStopJump();
 
 	
 
@@ -97,14 +115,24 @@ private:
 
 
 
+	UWorld* myWorld;
 
 
 
 
+	void Move(const FInputActionValue& Instance);
+	void Look(const FInputActionValue& Instance);
+	void OnStartJump();
+	void OnStopJump();
+
+
+	void SetDefaultSettingsCharacter();
+	void InitEnhancedInput();
+	void SpawnWeapon();
+	void InitWidget();
 
 
 
-
-
-	void Aim();
+	void StartAim();
+	void StopAim();
 };
