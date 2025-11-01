@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+//#include "KismetAnimationLibrary.h"
 #include "MyAnimation.generated.h"
 
 
@@ -18,8 +19,25 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly,Category=CharacterProperties)
 	float SpeedAnimationCharacter;
-	APawn* myCharacter;
 	
+	UPROPERTY(BlueprintReadOnly, Category = CharacterProperties)
+	float DirectionAnimCharacter;
+
+	UPROPERTY(BlueprintReadOnly, Category = CharacterProperties)
+	bool bIsSprinting;
+
+	UPROPERTY(BlueprintReadOnly, Category = CharacterProperties)
+	bool bIsJumping;
+
+	UPROPERTY(BlueprintReadOnly, Category = CharacterProperties)
+	bool bIsAiming;
+
+	
+
+
+	APawn* myCharacter;
+
+
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 	

@@ -10,6 +10,7 @@
 #include "InputAction.h"
 #include "InputActionValue.h"
 #include "Blueprint/UserWidget.h"
+#include <UObject/UnrealType.h>
 
 
 
@@ -48,6 +49,21 @@ void AMainCharacter::BeginPlay()
 	
 }
 
+void AMainCharacter::StartSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+}
+
+void AMainCharacter::StopSprint()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 250.f;
+}
+
+bool AMainCharacter::GetIsSprint()
+{
+	return bIsSprint;
+}
+
 
 void AMainCharacter::Tick(float DeltaTime)
 {
@@ -68,6 +84,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 		EInput->BindAction(IA_Jump, ETriggerEvent::Canceled, this, &AMainCharacter::OnStopJump);
 		EInput->BindAction(IA_Aim, ETriggerEvent::Started, this, &AMainCharacter::StartAim);
 		EInput->BindAction(IA_Aim, ETriggerEvent::Completed, this, &AMainCharacter::StopAim);
+		EInput->BindAction(IA_Sprint,ETriggerEvent::Started,this,&AMainCharacter::StartSprint);
+		EInput->BindAction(IA_Sprint,ETriggerEvent::Completed,this,&AMainCharacter::StopSprint);
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, TEXT("Find The MoveAction"));
 	}
 	
@@ -139,7 +157,9 @@ void AMainCharacter::SetDefaultSettingsCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->JumpZVelocity = 50.f;
+	GetCharacterMovement()->JumpZVelocity = 500.f;
+
+	GetCharacterMovement()->MaxWalkSpeed = 250.f;
 }
 
 void AMainCharacter::InitEnhancedInput()
@@ -173,6 +193,8 @@ void AMainCharacter::InitWidget()
 	{
 		if (APlayerController* PC = Cast<APlayerController>(GetController())) {
 			userWidget = CreateWidget<UUserWidget>(PC, BP_WidgetClass);
+			
+			
 		}
 	}
 }

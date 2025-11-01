@@ -12,18 +12,22 @@
 void UMyAnimation::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
-	myCharacter = TryGetPawnOwner();
 	UE_LOG(LogTemp, Warning, TEXT("Load Anim"));
 }
 
 void UMyAnimation::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+	myCharacter = TryGetPawnOwner();
 	if (myCharacter)
 	{
-		SpeedAnimationCharacter = myCharacter->GetVelocity().Size();
-		//UE_LOG(LogTemp, Warning, TEXT("You use Update Animation"));
+		FVector velocity = myCharacter->GetVelocity();
+		FRotator rotation = myCharacter->GetActorRotation();
+		SpeedAnimationCharacter = velocity.Size();
+		DirectionAnimCharacter = CalculateDirection(velocity, rotation);
+		//bIsSprinting = Cast<AMainCharacter>(myCharacter)->GetIsSprint();
 
+		
 	}
 }
 

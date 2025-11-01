@@ -19,10 +19,15 @@ class STRIKER_API AMainCharacter : public ACharacter
 
 public:
 	AMainCharacter();
-	
+	bool GetIsSprint();
+
 
 protected:
 	virtual void BeginPlay() override;
+	void StartSprint();
+	void StopSprint();
+
+
 
 public:
 	virtual void Tick(float DeltaTime) override;
@@ -57,6 +62,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* IA_Shoot;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* IA_Sprint;
+
 
 
 
@@ -67,14 +75,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> BP_WidgetClass;
 
-	//UPROPERTY(meta = (BindWidgetAnim), Transient, Category = "Widget")
 	//UWidgetAnimation* WidgetCrosshairAnimation;
 
 	UPROPERTY()
 	UUserWidget* userWidget;
 
+	
 
 
+	UPROPERTY()
 	AActor* Weapon;
 
 	
